@@ -1,0 +1,83 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'com.github.johnrengelman.shadow' version '5.0.0'
+  id "io.dotinc.vertx-codegen-plugin" version "0.0.1"
+}
+
+group = 'cn.wdz.vertx'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+codeGen {
+  vertxVersion = '3.8.4'
+  generatedDirs = "src/main/generated"
+  generationPath = "proxy"
+}
+
+compileJava {
+  targetCompatibility = 1.8
+  sourceCompatibility = 1.8
+}
+
+
+ext {
+  vertxVersion = '3.8.4'
+  junitJupiterEngineVersion = '5.4.0'
+}
+
+application {
+  mainClassName = 'io.vertx.core.Launcher'
+}
+
+
+def mainVerticleName = 'cn.wdz.vertx.vxweb.MainVerticle'
+def watchForChange = 'src/**/*'
+def doOnChange = './gradlew classes'
+
+dependencies {
+  implementation "io.vertx:vertx-core:$vertxVersion"
+  implementation "io.vertx:vertx-web:$vertxVersion"
+  implementation "io.vertx:vertx-rx-java2:$vertxVersion"
+  compileOnly("io.vertx:vertx-codegen:${vertxVersion}")
+  compileOnly("io.vertx:vertx-service-proxy:${vertxVersion}")
+  compile("io.vertx:vertx-redis-client:${vertxVersion}")
+  compile("io.vertx:vertx-jdbc-client:${vertxVersion}")
+  compile("io.vertx:vertx-auth-jwt:${vertxVersion}")
+  compile("io.vertx:vertx-auth-common:${vertxVersion}")
+  compile 'cn.hutool:hutool-core:5.0.6'
+  compile 'mysql:mysql-connector-java:6.0.5'
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterEngineVersion"
+  testImplementation "io.vertx:vertx-junit5:$vertxVersion"
+  testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterEngineVersion"
+}
+
+
+shadowJar {
+  classifier = 'fat'
+  manifest {
+    attributes 'Main-Verticle': mainVerticleName
+  }
+  mergeServiceFiles {
+    include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+  }
+}
+
+test {
+  useJUnitPlatform()
+  testLogging {
+    events 'PASSED', 'FAILED', 'SKIPPED'
+  }
+}
+
+run {
+  args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
+}
+
+wrapper {
+  gradleVersion = '5.2.1'
+}
+
