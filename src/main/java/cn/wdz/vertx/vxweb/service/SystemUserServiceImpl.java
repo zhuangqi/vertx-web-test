@@ -53,10 +53,21 @@ public class SystemUserServiceImpl implements SystemUserService {
       .map(SystemUser::new);
   }
 
+  @Override
+  public Maybe<SystemUser> getByAccount(String account) {
+    return client.rxQueryWithParams(SQL_QUERY_ACCOUNT, new JsonArray().add(account))
+      .map(ResultSet::getRows)
+      .toObservable()
+      .flatMapIterable(e -> e)
+      .singleElement()
+      .map(SystemUser::new);
+  }
 
-  private static final String SQL_CREATE = "INSERT INTO `sys_user` " +
-    "(`account`, `password`,`name`,`gmt_create`) VALUES (?, ?, ?, ?)";
+
+  private static final String SQL_CREATE = "insert into `sys_user` " +
+    "(`account`, `password`,`name`,`gmt_create`) values (?, ?, ?, ?)";
 
   private static final String SQL_QUERY = "select * from sys_user where id = ?";
 
+  private static final String SQL_QUERY_ACCOUNT = "select * from sys_user where account = ?";
 }

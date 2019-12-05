@@ -15,4 +15,5 @@ public interface SystemUserService {
 
   Maybe<SystemUser> get(Long id);
 
+  Maybe<SystemUser> getByAccount(String account);
 }

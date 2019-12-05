@@ -4,6 +4,7 @@ import cn.wdz.vertx.vxweb.common.server.ServerContext;
 import cn.wdz.vertx.vxweb.entity.SystemUser;
 import cn.wdz.vertx.vxweb.service.SystemUserService;
 import cn.wdz.vertx.vxweb.service.SystemUserServiceImpl;
+import io.reactivex.Maybe;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -14,6 +15,7 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author wdz
@@ -34,9 +36,22 @@ public class SystemUserRouter extends ServerContext {
     router.post("/sys/user/:id").handler(this::handleGet);
 
     EventBus eventBus = vertx.eventBus();
-    eventBus.<JsonObject>consumer("get_sysuser_account", msg -> {
-
+    eventBus.<String>consumer("get_sysuser_account", msg -> {
+      String account = msg.body();
+      systemUserService.getByAccount(account)
+        .map(Optional::of)
+        .switchIfEmpty(Maybe.just(Optional.empty()))
+        .toSingle()
+        .subscribe(r -> {
+          if (r.isPresent()) {
+            msg.reply(r.get());
+          } else {
+            msg.fail(404,"用户不存在");
+          }
+        });
     });
+
+
 
   }
 
@@ -61,10 +76,6 @@ public class SystemUserRouter extends ServerContext {
       badRequest(context);
     }
     sendResponse(context, systemUserService.get(Long.valueOf(id)), Json::encodePrettily);
-  }
-
-  private SystemUser getByAccount(String account) {
-    return null;
   }
 
 }

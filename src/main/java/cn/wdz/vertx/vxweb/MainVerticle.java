@@ -5,10 +5,14 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.wdz.vertx.vxweb.common.server.RouterDefinition;
 import io.reactivex.Completable;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.eventbus.EventBus;
+import io.vertx.reactivex.core.http.HttpServerResponse;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
@@ -27,6 +31,22 @@ public class MainVerticle extends AbstractVerticle {
     Router router = Router.router(vertx);
     enableCorsSupport(router);
     router.route().handler(BodyHandler.create());
+
+    EventBus eventBus = vertx.eventBus();
+    router.route("/sys/user").handler(context -> {
+      HttpServerResponse response = context.response();
+      String account = context.request().getParam("account");
+      eventBus.<JsonObject>rxRequest("get_sysuser_account",account)
+        .toObservable().subscribe(
+          msg -> response.end(msg.body().toString()),
+          ex -> {
+            ReplyException replyException = (ReplyException) ex;
+            response.setStatusCode(replyException.failureCode()).end(replyException.getMessage());
+          }
+      );
+    });
+
+
     router.errorHandler(500, context -> logger.error("🤣", context.failure()));
 
     loadRouter(router).andThen(createHttpServer(router, "127.0.0.1",8080))

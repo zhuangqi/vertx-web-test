@@ -31,6 +31,12 @@ public class SystemUser {
     SystemUserConverter.fromJson(new JsonObject(jsonStr), this);
   }
 
+  public JsonObject toJson() {
+    JsonObject jsonObject = new JsonObject();
+    SystemUserConverter.toJson(this,jsonObject);
+    return jsonObject;
+  }
+
   public Long getId() {
     return id;
   }
