@@ -1,0 +1,8 @@
+{
+  "service.type": "jdbc",
+  "url": "jdbc:mysql://localhost/vertx-web?characterEncoding=UTF-8&useSSL=false",
+  "driver_class": "com.mysql.cj.jdbc.Driver",
+  "user": "root",
+  "password": "root",
+  "max_pool_size": 30
+}

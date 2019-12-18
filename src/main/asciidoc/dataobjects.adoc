@@ -1,0 +1,22 @@
+= Cheatsheets
+
+[[SysUser]]
+== SysUser
+
+++++
+++++
+'''
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[account]]`@account`|`String`|-
+|[[avatar]]`@avatar`|`String`|-
+|[[delFlag]]`@delFlag`|`Boolean`|-
+|[[id]]`@id`|`Number (Long)`|-
+|[[name]]`@name`|`String`|-
+|[[password]]`@password`|`String`|-
+|[[useFlag]]`@useFlag`|`Boolean`|-
+|===
+
